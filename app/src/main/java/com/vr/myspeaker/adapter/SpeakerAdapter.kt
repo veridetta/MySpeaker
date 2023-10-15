@@ -12,19 +12,42 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.vr.myspeaker.R
 import com.vr.myspeaker.model.SpeakerModel
+import java.util.Locale
 
 
 class SpeakerAdapter(
-    private var barangList: List<SpeakerModel>,
+    private var barangList: ArrayList<SpeakerModel> = ArrayList(),
     val context: Context,
     private val onClickCard: (SpeakerModel) -> Unit,
 ) : RecyclerView.Adapter<SpeakerAdapter.ProductViewHolder>() {
+
+    public var filteredBarangList : ArrayList<SpeakerModel> = ArrayList()
+    init {
+        filteredBarangList.addAll(barangList)
+    }
     override fun getItemViewType(position: Int): Int {
-        return if (position == 0 && barangList.isEmpty()) {
+        return if (position == 0 && filteredBarangList.isEmpty()) {
             1 // Return 1 for empty state view
         } else {
             0 // Return 0 for regular product view
         }
+    }
+    fun filter(query: String) {
+        filteredBarangList.clear()
+        if (query !== null || query !=="") {
+            val lowerCaseQuery = query.toLowerCase(Locale.getDefault())
+            for (product in barangList) {
+                val nam = product.tipe?.toLowerCase(Locale.getDefault())?.contains(lowerCaseQuery)
+                if (nam == true) {
+                    filteredBarangList.add(product)
+                    Log.d("Ada ", product.tipe.toString())
+                }
+            }
+        } else {
+            filteredBarangList.addAll(barangList)
+        }
+        notifyDataSetChanged()
+        Log.d("Data f",filteredBarangList.size.toString())
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
         val itemView = LayoutInflater.from(parent.context)
@@ -33,11 +56,11 @@ class SpeakerAdapter(
     }
 
     override fun getItemCount(): Int {
-        return barangList.size
+        return filteredBarangList.size
     }
 
     override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
-        val currentBarang = barangList[position]
+        val currentBarang = filteredBarangList[position]
 
         holder.tvTipe.text = currentBarang.tipe
         holder.tvSeries.text = currentBarang.series

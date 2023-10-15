@@ -13,8 +13,8 @@
         android:padding="16dp">
         <ImageView
             android:id="@+id/imgCover"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/_150sdp"
+            android:layout_width="@dimen/_110sdp"
+            android:layout_height="@dimen/_110sdp"
             android:scaleType="centerCrop"
             android:layout_gravity="center"
             android:src="@drawable/no_image" />

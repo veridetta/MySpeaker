@@ -4,8 +4,11 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -19,8 +22,9 @@ import java.lang.reflect.Type
 
 class MainActivity : AppCompatActivity() {
     lateinit var lyKosong : LinearLayout
+    lateinit var etCari : EditText
     lateinit var rcSpeaker : RecyclerView
-    lateinit var adapter : SpeakerAdapter
+    lateinit var speakerAdapter : SpeakerAdapter
     var listSpeaker : ArrayList<SpeakerModel> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,33 +32,43 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         initView()
         initRc()
-
+        initCari()
     }
     fun initView(){
         lyKosong = findViewById(R.id.lyKosong)
         rcSpeaker = findViewById(R.id.rcSpeaker)
+        etCari = findViewById(R.id.etCari)
     }
     fun initRc(){
+        rcSpeaker.apply {
+            setHasFixedSize(true)
+            layoutManager = GridLayoutManager(this@MainActivity, 2)
+            // set the custom adapter to the RecyclerView
+            speakerAdapter = SpeakerAdapter(
+                listSpeaker,
+                this@MainActivity
+            )
+            //tambah klik
+            { speaker -> clickCard(speaker) }
+        }
         listSpeaker.clear()
         listSpeaker.addAll(readDataFromFile(this))
-        val sortedSpeaker = listSpeaker.sortedBy { it.tipe }
-        //ifjadwal kosong
-        if (sortedSpeaker.isEmpty()){
-            lyKosong.visibility = LinearLayout.VISIBLE
-            rcSpeaker.visibility = RecyclerView.GONE
-        }else {
-            rcSpeaker.apply {
-                setHasFixedSize(true)
-                layoutManager = GridLayoutManager(this@MainActivity, 2)
-                // set the custom adapter to the RecyclerView
-                adapter = SpeakerAdapter(
-                    sortedSpeaker,
-                    this@MainActivity
-                )
-                //tambah klik
-                { speaker -> clickCard(speaker) }
+        speakerAdapter.filteredBarangList.addAll(readDataFromFile(this))
+        speakerAdapter.notifyDataSetChanged()
+    }
+    private fun initCari(){
+        rcSpeaker.adapter = speakerAdapter
+        speakerAdapter.filter("")
+        etCari.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                speakerAdapter.filter(s.toString())
             }
-        }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
     }
     private fun readDataFromFile(context: Context): ArrayList<SpeakerModel> {
         // Split data JSON menjadi array string
